@@ -7,10 +7,15 @@ Welcome to codebook's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
+    
+   python/index
+   python/stack
 
-   hello
+   linux/index
+
+   database/index
 
 Indices and tables
 ==================
