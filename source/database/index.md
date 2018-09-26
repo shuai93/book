@@ -4,7 +4,6 @@
 
 #### 记录常用的sql
 - 行转列
-  ![source](/assets/source.png)
   ```
 
   CREATE TABLE `TabName` (
@@ -30,7 +29,6 @@
   FROM TabName  GROUP BY Date ;
 
   ```
-  ![result](/assets/result.png)
 
 
 ## postgresql
