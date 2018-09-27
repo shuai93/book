@@ -1,6 +1,6 @@
 
 # sql开发中最基本的规范要求
-----
+
 
 
 
@@ -10,31 +10,32 @@
 3. 代码应充分考虑执行效率，保证代码的高效性；
 
 ## 详细sql 总结
+
 1. **查看表字段名或随机少量数据时，不要使用 ` SELECT * FROM TABLENAME `**
 
  在psql命令窗口用 ` \d TABLENAME ` 或 ` SELECT * FROM TABLENAME WHERE 1 = 2 `、` SELECT * FROM TABLENAME limit 1 `等命令查看表结构信息，尽量不要直接执行 `SELECT * FROM TABLENAME ` ，这样GP数据库会查询出sql所有的记录。
 
- <br>
+
 
 2. **SELECT 子句中避免使用 \***
 
  在 SELECT 子句中列出所有的列时，使用*很方便，但是效率低。因为 GP 在解析过程中会查询数据字典，将 \* 依次转换成所有的列名。另外在ETL开发过程中使用 ` INSERT INTO..SELECT * FROM.. ` 语句时，如果FROM表新增字段时，会造成代码执行报错可能。所以，直接在SELECT子句中写出想要显示的列。
 
-<br>
+
 
 3. **查询总记录数时，尽量不要用 ` COUNT(*) `，而要指定一个有索引的字段**
 
 例如主键列为INDEX，使用` COUNT(INDEX) ` 能利用索引。
 
-<br>
+
 
 4. **对分区表进行查询时，尽量把分区键作为查询条件的第一个条件**
 
-<br>
+
 
 5. **无条件删除表中数据时，用 ` TRUNCATE ` 代替 ` DELETE `**
 
-<br>
+
 
 6. **查询语句中尽量使用表的索引字段，避免做大表的全表扫描**
 
@@ -43,7 +44,7 @@
 这条语句没有使用基于LAST_NAME创建的索引。
 当采用下面这种SQL语句的编写，GP系统就可以采用基于LAST_NAME创建的索引。
  ` SELECT *  FROM EMPLOYEE WHERE FIRST_NAME = 'Beill' AND LAST_NAME = 'Cliton'; `
-<br>
+
 
 7. **带通配符（%）的LIKE语句**
 
@@ -53,7 +54,7 @@
  当通配符出现在字符串其他位置时，优化器就能利用索引。例如：
   ` SELECT * FROM EMPLOYEE WHERE LAST_NAME LIKE 'c%'; `
 
-<br>
+
 
 8. **用EXISTS替代IN**
 
@@ -101,7 +102,7 @@ SELECT ACCT_NUM, BALANCE_AMT
 
 ORDER BY语句对要排序的列没有特别限制，也可以将函数加入列中。在ORDER BY语句中使用非索引项或有计算表达式都将降低查询速度。当ORDER BY中所有的列定义为非空时会用到索引，例如：T1表的ID列存在索引，且非空。则以下查询用到索引： ` SELECT * FROM T1 ORDER BY ID; `
 
-<br>
+
 
 11. **避免使用NOT**
 
@@ -112,7 +113,7 @@ ORDER BY语句对要排序的列没有特别限制，也可以将函数加入列
 对这个查询，可以改写为不使用NOT：` SELECT * FROM EMPLOYEE WHERE SALARY < 3000 OR SALARY > 3000; `
 虽然这两种查询的结果一样，但是第二种查询方案会比第一种查询方案更快些。第二种查询对SALARY列使用索引，而第一种查询则不能使用索引。
 
-<br>
+
 
 12. **使用DECODE函数减少处理时间**
 
@@ -140,16 +141,16 @@ WHERE ENAME LIKE 'SMITH%';
 ```
 类似的，DECODE函数也可以运用于GROUP BY 和ORDER BY子句中。
 
-<br>
+
 
 13. **如果可以使用WHERE条件，尽量不要在HAVING中限制数据**
-<br>
+
 
 14. **尽量不要使用distinct语句对数据去重**
 
  DISTINCT语句会引起排序操作，当查询的数据量很大时将排序会十分消耗数据库资源，从而影响查询的效率。请使用group by 语句替代distinct语句。
 
-<br>
+
 
 15. **避免在索引列上使用计算**
 
@@ -161,7 +162,7 @@ SELECT * FROM DEPT WHERE SAL * 12 > 25000;
 -- 高效：
 SELECT * FROM DEPT WHERE SAL > 25000 / 12;
 ```
-<br>
+
 
 16. **避免在索引列上使用IS NULL和IS NOT NULL**
 
@@ -178,7 +179,7 @@ SELECT … FROM DEPARTMENT WHERE DEPT_CODE IS NOT NULL;
 SELECT … FROM DEPARTMENT WHERE DEPT_CODE >=0;
 ```
 
-<br>
+
 
 17. **子查询改写成表连接**
 
@@ -204,18 +205,19 @@ SELECT COUNT(*) FROM T1 WHERE T1.ID IN (SELECT ID FROM T2);  --返回值3
 -- 表连接：
 SELECT COUNT(*) FROM T1, T2 WHERE T1.ID = T2.ID; -- 返回值5
 ```
-<br>
+
 
 18. **使用索引的第一个列**
 
 如果索引是建立在多个列上，只有在它的第一个列(leading column)被WHERE子句引用时，优化器才会选择使用该索引。
-<br>
+
 
 19. **减少对表的查询在含有子查询的SQL语句中，要特别注意减少对表的查询**
 
 例如：
-```
+```sql
 -- 低效：
+
 SELECT TAB_NAME FROM TABLES
 WHERE TAB_NAME = (SELECT TAB_NAME FROM TAB_COLUMNS WHERE VERSION = 604)
 AND DB_VER = (SELECT DB_VER FROM TAB_COLUMNS WHERE VERSION = 604);
@@ -226,45 +228,45 @@ WHERE (TAB_NAME, DB_VER) =
  (SELECT TAB_NAME, DB_VER FROM TAB_COLUMNS WHERE VERSION = 604);
 ```
 
-<br>
+
 
 20. **SQL语句中：用>=替代>**
 
 如果在ID列上建有索引，则语句 ` SELECT * FROM EMPLOYEE WHERE ID >= 9 ` 要比语句 ` SELECT * FROM EMPLOYEE WHERE ID > 8` 高效。这是由于前者DBMS将直接跳到第一个ID等于9的记录而后者将首先定位到8的记录并且向前扫描到第一个DEPT大于9的记录。
 
-<br>
+
 
 21. **大批量数据导入**
 
 大批量数据插入操作：`insert into xx select ..from xx` 操作时，可以使用gp外部表导出在导入。通常ETL工具会提供这样的封装功能来实现批量数据提交。
 
-<br>
+
 
 22. **SQL嵌套层数不能超过两层**
 
  SQL嵌套层数过多会影响最优执行计划的生成，执行计划容易变化，最终造成SQL执行效率降低，影响数据库的稳定性。因此规范SQL嵌套层数不能超过两层。
-<br>
+
 
 23. **定期使用Vacuum analyze tablename 回收垃圾和收集统计信息**
 
-<br>
+
 
 24. **SQL执行计划**
 
 在提交大的查询之前，首先使用Vacuum analyze tablename收集表统计信息，然后使用explain分析执行计划、发现潜在优化机会，避免将系统资源熬尽。
 
-<br>
+
 
 25. **gphdfs外部表**
 
 创建gphdfs外部表时注意尽量使用text格式，所以需提前在hadoop定义表时注意表的存储格式。发现hadoop中Parquet格式的表在GP中使用gphdfs外部表访问时，一旦其文件个数过多（大概20几个）会报错，严重会引起数据库异常。
 
-<br>
+
 
 26. **表增加分区注意事项**
 
 GP数据库增加分区时（ETL代码也要注意），如果需要压缩，则一定要指定压缩属性，如下例子所示:（新增分区不会自动继承父表的压缩属性）
-```
+```sql
 alter table table_xxx  add partition m201604 VALUES('201604')
 WITH (appendonly=true, compresslevel=5, orientation=column, compresstype=zlib)
  --行存储
@@ -272,12 +274,9 @@ WITH (appendonly=true, compresslevel=5, orientation=row, compresstype=zlib)
 
 ```
 
-<br>  
+
 
 27. **delete语句使用规范**
 
-如果可以使用truncate语句替代delete语句，则必须使用truncate语句（比如清空整张表，清空某个分区）。Delete语句执行完后，选择合理的时机对该表进行vacuum full操作：
-`vacuum full table_xxx`
-此操作可以收回delete操作后留下的空闲空间，防止delete频繁操作导致表膨胀。
-
----------------------
+如果可以使用truncate语句替代delete语句，则必须使用truncate语句（比如清空整张表，清空某个分区）。
+Delete语句执行完后，选择合理的时机对该表进行vacuum full操作：`vacuum full table_xxx`此操作可以收回delete操作后留下的空闲空间，防止delete频繁操作导致表膨胀。
