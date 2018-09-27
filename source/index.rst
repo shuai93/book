@@ -14,7 +14,7 @@ Welcome to codebook's documentation!
    python/stack
    linux/index
    database/index
-   database/sql
+
 
 Indices and tables
 ==================

@@ -75,7 +75,6 @@ echo "Hello World" >> file
 cat << EOF > file
 Hello
 Hello world
-
 EOF
 ```
 
