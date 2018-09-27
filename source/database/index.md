@@ -1,9 +1,9 @@
-## mysql
+# 常用sql解析
 
-### mysql 基本数据
+## mysql篇
 
-#### 记录常用的sql
-- 行转列
+###  行转列
+
   ```
 
   CREATE TABLE `TabName` (

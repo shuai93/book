@@ -9,13 +9,12 @@ Welcome to codebook's documentation!
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
-    
+
    python/index
    python/stack
-
    linux/index
-
    database/index
+   database/sql
 
 Indices and tables
 ==================
